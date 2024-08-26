@@ -27,7 +27,7 @@ const App = () => {
     event.preventDefault();
     const noteObject = {
       content: newNote,
-      importante: Math.random() < 0.5,
+      important: Math.random() < 0.5,
       id: notes.length + 1,
     };
     noteService
@@ -45,9 +45,11 @@ const App = () => {
   const changedNote = { ...note, important: !note.important }
 
     noteService.update(id, changedNote).then((returnedNote) => {
+      console.log("Updated note:", returnedNote);
       setNotes(notes.map((note) => (note.id !== id ? note : returnedNote)));
     })
     .catch(error => {
+      console.error("Error updating note:", error);
       setErrorMessage(
         `Note '${note.content}' was already remove from server`
       )
@@ -78,7 +80,7 @@ const App = () => {
       </ul>
       <form onSubmit={addNote}>
         <input value={newNote} onChange={handleNoteChange} />
-        <button type="submite">save</button>
+        <button type="submit">save</button>
       </form>
       <Footer />
     </div>

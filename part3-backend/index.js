@@ -6,25 +6,30 @@ const cors = require('cors')
 
 app.use(cors())
 
-app.use(express.static('build'))
+app.use(express.static('build'));
 
-let notes = [
-  {
-    id: 1,
-    content: "HTML is easy",
-    important: true,
-  },
-  {
-    id: 2,
-    content: "Browser can execute only JavaScript",
-    important: false,
-  },
-  {
-    id: 3,
-    content: "GET and POST are the most important methods of HTTP protocol",
-    important: true,
-  },
-];
+
+
+// ------- PARTE DE LA BASE DE DATOS
+const mongoose = require('mongoose')
+
+const password = process.argv[2]
+
+const url = `mongodb+srv://nicobrandoni98:${password}@proeyctofullstack.vqdwg.mongodb.net/noteApp?retryWrites=true&w=majority&appName=proeyctoFullstack`;
+
+mongoose.set('strictQuery',false)
+mongoose.connect(url)
+
+const noteSchema = new mongoose.Schema({
+  content: String,
+  important: Boolean,
+})
+
+const Note = mongoose.model('Note', noteSchema)
+
+//----------------------------------
+
+
 
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)
@@ -42,12 +47,10 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
-/* app.get("/", (request, response) => {
-  response.send("<h1>Hello World!</h1>");
-});
- */
 app.get("/api/notes", (request, response) => {
-  response.json(notes);
+  Note.findById({}).then(notes => {
+    response.json(notes);
+  })
 });
 
 app.get('/api/notes/:id', (request, response) => {

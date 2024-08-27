@@ -14,8 +14,9 @@ app.use(express.static('build'));
 const mongoose = require('mongoose')
 
 const password = process.argv[2]
+console.log('password', password)
 
-const url = `mongodb+srv://nicobrandoni98:${password}@proeyctofullstack.vqdwg.mongodb.net/noteApp?retryWrites=true&w=majority&appName=proeyctoFullstack`;
+const url = `mongodb+srv://nicobrandoni98:1RXqaQ5n8QWVZrHa@proeyctofullstack.vqdwg.mongodb.net/noteApp?retryWrites=true&w=majority&appName=proeyctoFullstack`;
 
 mongoose.set('strictQuery',false)
 mongoose.connect(url)

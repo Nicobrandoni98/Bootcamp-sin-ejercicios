@@ -9,7 +9,6 @@ app.use(cors())
 app.use(express.static('build'));
 
 
-
 // ------- PARTE DE LA BASE DE DATOS
 const mongoose = require('mongoose')
 
@@ -58,7 +57,7 @@ const unknownEndpoint = (request, response) => {
 }
 
 app.get("/api/notes", (request, response) => {
-  Note.findById({}).then(notes => {
+  Note.find({}).then(notes => {
     response.json(notes);
   })
 });
@@ -76,10 +75,16 @@ app.get('/api/notes/:id', (request, response) => {
 })
 
 app.delete('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id)
-  notes = notes.filter(note => note.id !== id)
-  response.status(204).end()
-})
+  Note.findByIdAndRemove(request.params.id)
+    .then(result => {
+      if (result) {
+        response.status(204).end();
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch(error => response.status(400).send({ error: 'malformatted id' }));
+});
 
 
 
@@ -111,18 +116,20 @@ app.post('/api/notes', (request, response) => {
 })
 
 app.put('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id);
+  const { id } = request.params;
   const body = request.body;
 
-  const note = notes.find(note => note.id === id);
-  if (note) {
-    const updatedNote = { ...note, ...body };
-    notes = notes.map(note => (note.id !== id ? note : updatedNote));
-    response.json(updatedNote);
-  } else {
-    response.status(404).end();
-  }
+  Note.findByIdAndUpdate(id, body, { new: true })
+    .then(updatedNote => {
+      if (updatedNote) {
+        response.json(updatedNote);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch(error => response.status(400).send({ error: 'malformatted id' }));
 });
+
 
 
 

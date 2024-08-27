@@ -17,6 +17,7 @@ const password = process.argv[2]
 console.log('password', password)
 
 const url = `mongodb+srv://nicobrandoni98:1RXqaQ5n8QWVZrHa@proeyctofullstack.vqdwg.mongodb.net/noteApp?retryWrites=true&w=majority&appName=proeyctoFullstack`;
+// lo que esta despues de nicobrandoni98 hasta el @: es la contraseña
 
 mongoose.set('strictQuery',false)
 mongoose.connect(url)
@@ -24,6 +25,14 @@ mongoose.connect(url)
 const noteSchema = new mongoose.Schema({
   content: String,
   important: Boolean,
+})
+
+noteSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
 })
 
 const Note = mongoose.model('Note', noteSchema)

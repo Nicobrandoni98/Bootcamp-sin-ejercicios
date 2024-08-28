@@ -1,40 +1,23 @@
-const http = require("http");
-const express = require('express')
-const app = express()
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
 
-const cors = require('cors')
+const app = express();
+const Note = require('./models/note');
 
-app.use(cors())
-
+app.use(cors());
 app.use(express.static('build'));
+app.use(express.json());
 
 
 // ------- PARTE DE LA BASE DE DATOS
-const mongoose = require('mongoose')
+/* const mongoose = require('mongoose')
 
 const password = process.argv[2]
 console.log('password', password)
 
-const url = `mongodb+srv://nicobrandoni98:1RXqaQ5n8QWVZrHa@proeyctofullstack.vqdwg.mongodb.net/noteApp?retryWrites=true&w=majority&appName=proeyctoFullstack`;
+const url = `mongodb+srv://nicobrandoni98:1RXqaQ5n8QWVZrHa@proeyctofullstack.vqdwg.mongodb.net/noteApp?retryWrites=true&w=majority&appName=proeyctoFullstack`; */
 // lo que esta despues de nicobrandoni98 hasta el @: es la contraseña
-
-mongoose.set('strictQuery',false)
-mongoose.connect(url)
-
-const noteSchema = new mongoose.Schema({
-  content: String,
-  important: Boolean,
-})
-
-noteSchema.set('toJSON', {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString()
-    delete returnedObject._id
-    delete returnedObject.__v
-  }
-})
-
-const Note = mongoose.model('Note', noteSchema)
 
 //----------------------------------
 
@@ -63,15 +46,9 @@ app.get("/api/notes", (request, response) => {
 });
 
 app.get('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id)
-  
-  const note = notes.find(note => note.id === id);
-  if (note) {
+  Note.findById(request.params.id).then(note => {
     response.json(note)
-    
-  } else {
-    response.status(404).end();
-  }
+  })
 })
 
 app.delete('/api/notes/:id', (request, response) => {
@@ -86,33 +63,21 @@ app.delete('/api/notes/:id', (request, response) => {
     .catch(error => response.status(400).send({ error: 'malformatted id' }));
 });
 
-
-
-const generateId = () => {
-  const maxId = notes.length > 0
-    ? Math.max(...notes.map(n => n.id))
-    : 0
-  return maxId + 1
-}
-
 app.post('/api/notes', (request, response) => {
   const body = request.body
 
-  if (!body.content) {
-    return response.status(400).json({ 
-      error: 'content missing' 
-    })
+  if (body.content === undefined) {
+    return response.status(400).json({ error: 'content missing' })
   }
 
-  const note = {
+  const note = new Note({
     content: body.content,
-    important: Boolean(body.important) || false,
-    id: generateId(),
-  }
+    important: body.important || false,
+  })
 
-  notes = notes.concat(note)
-
-  response.json(note)
+  note.save().then(savedNote => {
+    response.json(savedNote)
+  })
 })
 
 app.put('/api/notes/:id', (request, response) => {

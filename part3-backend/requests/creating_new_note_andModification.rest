@@ -1,0 +1,17 @@
+POST http://localhost:3001/api/notes/
+Content-Type: application/json
+
+{
+    "content": "asd",
+    "important": true
+}
+
+###
+
+PUT http://localhost:3001/api/notes/66cf91c8660542582479f1ed
+Content-Type: application/json
+
+{
+    "content": "cambiando contenido",
+    "important": true
+}

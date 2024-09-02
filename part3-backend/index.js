@@ -1,13 +1,13 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+const express = require('express')
+const cors = require('cors')
+require('dotenv').config()
 
-const app = express();
-const Note = require('./models/note');
+const app = express()
+const Note = require('./models/note')
 
-app.use(cors());
-app.use(express.static('build'));
-app.use(express.json());
+app.use(cors())
+app.use(express.static('build'))
+app.use(express.json())
 
 // ------- PARTE DE LA BASE DE DATOS
 /* const mongoose = require('mongoose')
@@ -36,11 +36,11 @@ const unknownEndpoint = (request, response) => {
 }
 
 
-app.get("/api/notes", (request, response) => {
+app.get('/api/notes', (request, response) => {
   Note.find({}).then(notes => {
-    response.json(notes);
+    response.json(notes)
   })
-});
+})
 
 app.get('/api/notes/:id', (request, response, next) => {
   Note.findById(request.params.id)
@@ -62,13 +62,13 @@ app.put('/api/notes/:id', (request, response, next) => {
     important: body.important,
   } */
 
-    const {content, important} = request.body
+  const {content, important} = request.body
 
   Note.findByIdAndUpdate(
     request.params.id,
-     {content, important},
-     {new: true, runValidators: true, context: 'query'}
-    )
+    {content, important},
+    {new: true, runValidators: true, context: 'query'}
+  )
     .then(updatedNote => {
       response.json(updatedNote)
     })
@@ -90,23 +90,23 @@ app.post('/api/notes', (request, response, next) => {
   note.save().then(savedNote => {
     response.json(savedNote)
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 app.put('/api/notes/:id', (request, response) => {
-  const { id } = request.params;
-  const body = request.body;
+  const { id } = request.params
+  const body = request.body
 
   Note.findByIdAndUpdate(id, body, { new: true })
     .then(updatedNote => {
       if (updatedNote) {
-        response.json(updatedNote);
+        response.json(updatedNote)
       } else {
-        response.status(404).end();
+        response.status(404).end()
       }
     })
-    .catch(error => response.status(400).send({ error: 'malformatted id' }));
-});
+    .catch(error => response.status(400).send({ error: 'malformatted id' }))
+})
 
 
 const errorHandler = (error, request, response, next) => {
@@ -128,5 +128,5 @@ app.use(errorHandler)
 
 
 const PORT = process.env.PORT 
-app.listen(PORT);
-console.log(`Server running on port ${PORT}`);
+app.listen(PORT)
+console.log(`Server running on port ${PORT}`)

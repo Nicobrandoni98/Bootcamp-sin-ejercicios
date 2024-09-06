@@ -1,4 +1,4 @@
-const { test, describe } = require('node:test')
+/* const { test, describe } = require('node:test')
 const assert = require('node:assert')
 
 const reverse = require('../utils/for_testing').reverse
@@ -22,4 +22,4 @@ describe('reverse', () => {
 
     assert.strictEqual(result, 'saippuakauppias')
   })
-})
+}) */

@@ -1,17 +1,10 @@
 POST http://localhost:3001/api/notes/
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imp1YW4iLCJpZCI6IjY2ZTFmNjE3ZjAyNjJkMjAyZDI3ZDU4NyIsImlhdCI6MTcyNjA4Njk5MX0.BbeVvnVjV7L28v6XJZB-XQAyDs3EEsVFk5xMjXWg0jM
 
 {
-    "content": "ldol",
+    "content": "Libro de juan",
     "important": true
 }
 
 ###
-
-PUT http://localhost:3001/api/notes/66cf91c8660542582479f1ed
-Content-Type: application/json
-
-{
-    "content": "134",
-    "important": true
-}

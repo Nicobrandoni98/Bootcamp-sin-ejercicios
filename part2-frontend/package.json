@@ -3,11 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.4",
     "cors": "^2.8.5",
+    "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
@@ -16,9 +14,10 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "vitest run",
     "eject": "react-scripts eject",
-    "server": "json-server -p3001 --watch db.json"
+    "server": "json-server -p3001 --watch db.json",
+    "lint": "eslint ."
   },
   "eslintConfig": {
     "extends": [
@@ -39,7 +38,15 @@
     ]
   },
   "devDependencies": {
-    "json-server": "^1.0.0-beta.1"
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@vitejs/plugin-react": "^4.3.2",
+    "eslint-plugin-react-refresh": "^0.4.12",
+    "eslint-plugin-vitest-globals": "^1.5.0",
+    "jsdom": "^25.0.1",
+    "json-server": "^1.0.0-beta.1",
+    "vitest": "^2.1.2"
   },
-   "proxy": "http://localhost:3001"
+  "proxy": "http://localhost:3001"
 }

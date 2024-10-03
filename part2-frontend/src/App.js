@@ -121,7 +121,7 @@ const App = () => {
       {!user && loginForm()}
       {user && <div>
        <p>{user.name} logged in</p>
-       <Togglable buttonLabel={'Save'} ref={noteFormRef}>
+       <Togglable buttonLabel={'new note'} ref={noteFormRef}>
         <NoteForm
           createNote={addNote}
         />

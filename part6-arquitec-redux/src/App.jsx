@@ -1,18 +1,13 @@
-/* import { useState } from 'react'
+import Notes from "./components/Notes"
+import NewNote from "./components/NewNote"
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-    </>
+const App = () => {
+  return(
+    <div>
+      <NewNote />
+      <Notes />
+    </div>
   )
 }
 
 export default App
- */

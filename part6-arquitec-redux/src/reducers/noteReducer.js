@@ -1,3 +1,4 @@
+// Reducer
 const noteReducer = (state = [], action) => {
   switch(action.type) {
     case 'NEW_NOTE':
@@ -17,9 +18,11 @@ const noteReducer = (state = [], action) => {
     }
   } 
 
+// Generate Id random
 const generateId = () =>
   Number((Math.random() * 1000000).toFixed(0))
 
+// Create Note
 export const createNote = (content) => {
   return {
     type: 'NEW_NOTE',
@@ -31,6 +34,7 @@ export const createNote = (content) => {
   }
 }
 
+// Toggle Importance
 export const toggleImportanceOf = (id) => {
   return {
     type: 'TOGGLE_IMPORTANCE',

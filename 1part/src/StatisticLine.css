@@ -1,0 +1,15 @@
+table {
+  width: 170px;
+  border-collapse: collapse;
+}
+td {
+  text-align: left;
+  vertical-align: middle;
+}
+p {
+  display: inline-block;
+  margin: 6px;
+}
+.text {
+    width: 60px;
+}

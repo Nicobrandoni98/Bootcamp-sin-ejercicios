@@ -1,4 +1,4 @@
-/* import { useEffect } from "react";
+import { useEffect } from "react";
 import Notes from "./components/Notes";
 import NewNote from "./components/NewNote";
 import VisibilityFilter  from "./components/visibilityFilter";
@@ -23,7 +23,7 @@ const App = () => {
   );
 };
 
-export default App; */
+export default App; 
 
 // Comento el codigo para seguir con el cap D de la part 6
 /* import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -88,10 +88,10 @@ const App = () => {
   );
 };
 
-export default App; */
+export default App; 
 
 // siguiendo parte 6 cap D, useReducer
-import Display from "./components/Display";
+/* import Display from "./components/Display";
 import Button from "./components/Button";
 
 const App = () => {
@@ -107,4 +107,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default App; */

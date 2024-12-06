@@ -1,5 +1,7 @@
-import React from 'react'
+/* import React from 'react' */
 import { gql, useQuery } from '@apollo/client';
+import Persons from './components/Persons'
+import PersonForm from './components/PersonForm';
 
 const ALL_PERSONS = gql`
 query {
@@ -13,15 +15,16 @@ query {
 
 const App = () => {
   const result = useQuery(ALL_PERSONS)
-  
+
   if (result.loading)  {
     return <div>loading...</div>
   }
 
   return (
-    <div>
-      {result.data.allPersons.map(p => p.name).join(', ')}
-    </div>
+    <>
+    <Persons persons = {result.data.allPersons}/>
+     <PersonForm /> 
+    </>
   )
 }
 

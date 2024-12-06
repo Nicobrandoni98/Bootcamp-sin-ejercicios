@@ -1,32 +1,26 @@
 import React, { useState } from "react";
 import { gql, useMutation } from "@apollo/client";
+import { CREATE_PERSON, ALL_PERSONS } from "../queries/queries";
 
-const CREATE_PERSON = gql`
-  mutation createPerson(
-    $name: String!
-    $street: String!
-    $city: String!
-    $phone: String
-  ) {
-    addPerson(name: $name, street: $street, city: $city, phone: $phone) {
-      name
-      phone
-      id
-      address {
-        street
-        city
-      }
-    }
-  }
-`;
 
-const PersonForm = () => {
+const PersonForm = ({setError}) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
 
-  const [createPerson] = useMutation(CREATE_PERSON);
+  const [createPerson] = useMutation(CREATE_PERSON , {
+    refetchQueries: [ { query: ALL_PERSONS } ],
+    onError: (error) => {
+      const messages =
+        error.graphQLErrors?.[0]?.extensions?.error?.errors
+          ? Object.values(error.graphQLErrors[0].extensions.error.errors)
+              .map((e) => e.message)
+              .join("\n")
+          : error.graphQLErrors?.[0]?.message || "Error inesperado.";
+      setError(messages);
+    },
+  });
 
   const submit = (event) => {
     event.preventDefault();

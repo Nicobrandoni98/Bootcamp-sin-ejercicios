@@ -3,7 +3,9 @@ const { startStandaloneServer } = require("@apollo/server/standalone");
 const { gql } = require("graphql-tag");
 const { v1: uuid } = require("uuid");
 const { GraphQLError } = require("graphql");
+const jwt = require("jsonwebtoken");
 const Person = require("./models/person");
+const User = require("./models/user");
 
 /* let persons = [
   {
@@ -52,6 +54,16 @@ const typeDefs = gql`
     city: String!
   }
 
+  type User {
+    username: String!
+    friends: [Person!]!
+    id: ID!
+  }
+
+  type Token {
+    value: String!
+  }
+
   type Person {
     name: String!
     phone: String
@@ -67,6 +79,7 @@ const typeDefs = gql`
     personCount: Int!
     allPersons(phone: YesNo): [Person!]!
     findPerson(name: String!): Person
+    me: User
   }
 
   type Mutation {
@@ -76,7 +89,11 @@ const typeDefs = gql`
       street: String!
       city: String!
     ): Person
+
     editNumber(name: String!, phone: String!): Person
+
+    createUser(username: String!): User
+    login(username: String!, password: String!): Token
   }
 `;
 
@@ -91,6 +108,9 @@ const resolvers = {
       const { name } = args;
       Person.findOne({ name });
     },
+    me: (root, args, context) => {
+      return context.currentUser
+    },
   },
   Person: {
     address: (root) => {
@@ -101,14 +121,57 @@ const resolvers = {
     },
   },
   Mutation: {
-    addPerson: (root, args) => {
+    addPerson: async (root, args) => {
       const person = new Person({ ...args });
-      return person.save();
+      try {
+        await person.save();
+      } catch (error) {
+        throw new UserInputError(error.message, {
+          invalidArgs: args,
+        });
+      }
+      return person;
     },
     editNumber: async (root, args) => {
       const person = await Person.findOne({ name: args.name });
       person.phone = args.phone;
-      return person.save();
+
+      try {
+        await person.save();
+      } catch (error) {
+        throw new UserInputError(error.message, {
+          invalidArgs: args,
+        });
+      }
+      return person;
+    },
+    createUser: (root, args) => {
+      const user = new User({ username: args.username });
+
+      return user.save().catch((error) => {
+        throw new UserInputError(error.message, {
+          invalidArgs: args,
+        });
+      });
+    },
+    login: async (root, args) => {
+      const user = await User.findOne({ username: args.username });
+
+      // CUANDO PONGA EL PASSWORD TIENE QUE SER 'secret' SINO ME DA ERROR.
+      if (!user || args.password !== "secret") {
+        throw new GraphQLError("wrong credentials", {
+          extensions: {
+            code: "BAD_USER_INPUT",
+          },
+        });
+      }
+
+      const userForToken = {
+        username: user.username,
+        id: user._id,
+      };
+
+      return { value: jwt.sign(userForToken, process.env.JWT_SECRET) };
     },
   },
 };
@@ -120,6 +183,19 @@ const server = new ApolloServer({
 
 startStandaloneServer(server, {
   listen: { port: 4000 },
+  context: async ({ req, res }) => {
+    const auth = req ? req.headers.authorization : null;
+    if (auth && auth.startsWith("Bearer ")) {
+      const decodedToken = jwt.verify(
+        auth.substring(7),
+        process.env.JWT_SECRET
+      );
+      const currentUser = await User.findById(decodedToken.id).populate(
+        "friends"
+      );
+      return { currentUser };
+    }
+  },
 }).then(({ url }) => {
   console.log(`Server ready at ${url}`);
 });

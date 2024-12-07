@@ -3,8 +3,9 @@ const { startStandaloneServer } = require("@apollo/server/standalone");
 const { gql } = require("graphql-tag");
 const { v1: uuid } = require("uuid");
 const { GraphQLError } = require("graphql");
+const Person = require("./models/person");
 
-let persons = [
+/* let persons = [
   {
     name: "Arto Hellas",
     phone: "040-123543",
@@ -25,7 +26,25 @@ let persons = [
     city: "Helsinki",
     id: "3d599471-3436-11e9-bc57-8b80ba54c431",
   },
-];
+]; */
+
+const mongoose = require("mongoose");
+mongoose.set("strictQuery", false);
+
+require("dotenv").config();
+
+const MONGODB_URI = process.env.MONGODB_URI;
+
+console.log("connecting to", MONGODB_URI);
+
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.log("connected to MongoDB");
+  })
+  .catch((error) => {
+    console.log("error connection to MongoDB:", error.message);
+  });
 
 const typeDefs = gql`
   type Address {
@@ -63,16 +82,15 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    personCount: () => persons.length,
-    allPersons: (root, args) => {
-      if (!args.phone) {
-        return persons;
-      }
-      const byPhone = (person) =>
-        args.phone === "YES" ? person.phone : !person.phone;
-      return persons.filter(byPhone);
+    personCount: () => Person.collection.countDocuments(),
+    allPersons: async (root, args) => {
+      if (!args.phone) return Person.find({});
+      return Person.find({ phone: { $exists: args.phone === "YES" } });
     },
-    findPerson: (root, args) => persons.find((p) => p.name === args.name),
+    findPerson: (root, args) => {
+      const { name } = args;
+      Person.findOne({ name });
+    },
   },
   Person: {
     address: (root) => {
@@ -84,29 +102,14 @@ const resolvers = {
   },
   Mutation: {
     addPerson: (root, args) => {
-      if (persons.find((p) => p.name === args.name)) {
-        throw new GraphQLError("Name must be unique", {
-          extensions: {
-            code: "BAD_USER_INPUT",
-            invalidArgs: args.name,
-          },
-        });
-      }
-
-      const person = { ...args, id: uuid() };
-      persons = persons.concat(person);
-      return person;
+      const person = new Person({ ...args });
+      return person.save();
     },
-    editNumber: (root, args) => {
-      const person = persons.find(p => p.name === args.name)
-      if (!person) {
-        return null
-      }
-  
-      const updatedPerson = { ...person, phone: args.phone }
-      persons = persons.map(p => p.name === args.name ? updatedPerson : p)
-      return updatedPerson
-    } 
+    editNumber: async (root, args) => {
+      const person = await Person.findOne({ name: args.name });
+      person.phone = args.phone;
+      return person.save();
+    },
   },
 };
 

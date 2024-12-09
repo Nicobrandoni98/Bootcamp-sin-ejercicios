@@ -7,29 +7,6 @@ const jwt = require("jsonwebtoken");
 const Person = require("./models/person");
 const User = require("./models/user");
 
-/* let persons = [
-  {
-    name: "Arto Hellas",
-    phone: "040-123543",
-    street: "Tapiolankatu 5 A",
-    city: "Espoo",
-    id: "3d594650-3436-11e9-bc57-8b80ba54c431",
-  },
-  {
-    name: "Matti Luukkainen",
-    phone: "040-432342",
-    street: "Malminkaari 10 A",
-    city: "Helsinki",
-    id: "3d599470-3436-11e9-bc57-8b80ba54c431",
-  },
-  {
-    name: "Venla Ruuska",
-    street: "Nallemäentie 22 C",
-    city: "Helsinki",
-    id: "3d599471-3436-11e9-bc57-8b80ba54c431",
-  },
-]; */
-
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 
@@ -48,12 +25,7 @@ mongoose
     console.log("error connection to MongoDB:", error.message);
   });
 
-const typeDefs = gql`
-  type Address {
-    street: String!
-    city: String!
-  }
-
+  const typeDefs = `
   type User {
     username: String!
     friends: [Person!]!
@@ -64,6 +36,23 @@ const typeDefs = gql`
     value: String!
   }
 
+  type Address {
+    street: String!
+    city: String! 
+  }
+
+  enum YesNo {
+    YES
+    NO
+  }
+  
+  type Query {
+    personCount: Int!
+    allPersons(phone: YesNo): [Person!]!
+    findPerson(name: String!): Person
+    me: User
+  }
+
   type Person {
     name: String!
     phone: String
@@ -71,15 +60,10 @@ const typeDefs = gql`
     id: ID!
   }
 
-  enum YesNo {
-    YES
-    NO
-  }
   type Query {
     personCount: Int!
-    allPersons(phone: YesNo): [Person!]!
+    allPersons: [Person!]!
     findPerson(name: String!): Person
-    me: User
   }
 
   type Mutation {
@@ -90,12 +74,26 @@ const typeDefs = gql`
       city: String!
     ): Person
 
-    editNumber(name: String!, phone: String!): Person
+    editNumber(
+      name: String!
+      phone: String!
+    ): Person
 
-    createUser(username: String!): User
-    login(username: String!, password: String!): Token
+    createUser(
+      username: String!
+    ): User
+    
+    login(
+      username: String!
+      password: String!
+    ): Token  
+    
+    addAsFriend(
+      name: String!
+    ): User
   }
-`;
+`
+
 
 const resolvers = {
   Query: {
@@ -104,12 +102,9 @@ const resolvers = {
       if (!args.phone) return Person.find({});
       return Person.find({ phone: { $exists: args.phone === "YES" } });
     },
-    findPerson: (root, args) => {
-      const { name } = args;
-      Person.findOne({ name });
-    },
+    findPerson: async (root, args) => Person.findOne({ name: args.name }),
     me: (root, args, context) => {
-      return context.currentUser
+      return context.currentUser;
     },
   },
   Person: {
@@ -121,15 +116,32 @@ const resolvers = {
     },
   },
   Mutation: {
-    addPerson: async (root, args) => {
+    addPerson: async (root, args, context) => {
       const person = new Person({ ...args });
-      try {
-        await person.save();
-      } catch (error) {
-        throw new UserInputError(error.message, {
-          invalidArgs: args,
+      const currentUser = context.currentUser;
+
+      if (!currentUser) {
+        throw new GraphQLError("not authenticated", {
+          extensions: {
+            code: "BAD_USER_INPUT",
+          },
         });
       }
+
+      try {
+        await person.save();
+        currentUser.friends = currentUser.friends.concat(person);
+        await currentUser.save();
+      } catch (error) {
+        throw new GraphQLError("Saving user failed", {
+          extensions: {
+            code: "BAD_USER_INPUT",
+            invalidArgs: args.name,
+            error,
+          },
+        });
+      }
+
       return person;
     },
     editNumber: async (root, args) => {
@@ -172,6 +184,27 @@ const resolvers = {
       };
 
       return { value: jwt.sign(userForToken, process.env.JWT_SECRET) };
+    },
+    addAsFriend: async (root, args, { currentUser }) => {
+      const isFriend = (person) =>
+        currentUser.friends
+          .map((f) => f._id.toString())
+          .includes(person._id.toString());
+
+      if (!currentUser) {
+        throw new GraphQLError("wrong credentials", {
+          extensions: { code: "BAD_USER_INPUT" },
+        });
+      }
+
+      const person = await Person.findOne({ name: args.name });
+      if (!isFriend(person)) {
+        currentUser.friends = currentUser.friends.concat(person);
+      }
+
+      await currentUser.save();
+
+      return currentUser;
     },
   },
 };

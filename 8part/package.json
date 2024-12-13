@@ -12,9 +12,12 @@
     "@apollo/server": "^4.11.2",
     "dotenv": "^16.4.7",
     "graphql": "^16.9.0",
+    "graphql-subscriptions": "^3.0.0",
     "graphql-tag": "^2.12.6",
+    "graphql-ws": "^5.16.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.11.0",
-    "mongoose": "^8.8.4"
+    "mongoose": "^8.8.4",
+    "ws": "^8.18.0"
   }
 }

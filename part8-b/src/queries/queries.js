@@ -15,11 +15,10 @@ const PERSON_DETAILS = gql`
 export const ALL_PERSONS = gql`
   query {
     allPersons  {
-      name
-      phone
-      id
+      ...PersonDetails
     }
   }
+  ${PERSON_DETAILS}
 `
 
 export const CREATE_PERSON = gql`
@@ -47,7 +46,6 @@ export const FIND_PERSON = gql`
       ...PersonDetails
     }
   }
-
   ${PERSON_DETAILS}
 `
 
